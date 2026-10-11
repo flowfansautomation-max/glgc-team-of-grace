@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Team of Grace — Weekly Reports</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css?v=2">
+  <script src="config.js?v=2"></script><script src="roster.js?v=2"></script><script src="manual.js?v=2"></script><script src="data.js?v=2"></script>
+</head>
+<body>
+  <div class="deck" id="deck"></div>
+  <div class="ctl"><button id="prev">‹ Prev</button><select id="jump"></select><button id="next">Next ›</button><span class="pos" id="pos"></span></div>
+<script>
+var valueLabels = { id:'valueLabels', afterDatasetsDraw:function (chart) { var ctx = chart.ctx;
+  chart.data.datasets.forEach(function (ds, di) { var meta = chart.getDatasetMeta(di); if (meta.hidden) return;
+    meta.data.forEach(function (el, i) { var v = ds.data[i]; if (v == null) return;
+      ctx.save(); ctx.fillStyle = '#fff'; ctx.font = 'bold 12px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(v, el.x, el.y - 4); ctx.restore(); }); }); } };
+function chart(canvas, labels, datasets, rightAxis) {
+  var scales = { x:{ ticks:{color:'#ddd',font:{size:12}}, grid:{display:false}, border:{color:'#fff'} }, y:{ display:false, beginAtZero:true, grace:'25%' } };
+  if (rightAxis) scales.y1 = { display:false, beginAtZero:true, grace:'25%', position:'right' };
+  return new Chart(canvas, { type:'bar', plugins:[valueLabels], data:{ labels:labels, datasets:datasets },
+    options:{ responsive:true, maintainAspectRatio:false, animation:false, plugins:{ legend:{display:false} }, scales:scales } }); }
+function bars(label, data, color, axis) { return { label:label, data:data, backgroundColor:color, borderRadius:4, maxBarThickness:44, yAxisID:axis || 'y' }; }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]; }); }
+function initials(n) { return n.replace(/^LP\s+/i, '').split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w[0]; }).join('').toUpperCase() || '?'; }
+function fmt(v) { return v == null ? '<span class="nr">not reported</span>' : '<span class="v">' + esc(v) + '</span>'; }
+function ghs(v) { return v == null ? '<span class="nr">—</span>' : '<span class="v">GHS ' + esc(v) + '</span>'; }
+
+TG.load(function (M) {
+  var deck = document.getElementById('deck'), slides = [], W = M.weeks, last = W[W.length - 1], labels = W.map(function (w) { return ['WK ' + w.wk, w.label]; });
+
+  // ---- cover ----
+  slides.push({ title:'Cover', html:'<div class="cover"><div class="t1">Team of Grace</div><div class="t2">Weekly Reports</div><div class="t3">' + (last ? 'Latest week: WK ' + last.wk + ' · week ending Sunday ' + esc(last.label) + ' ' + last.date.getFullYear() : '') + '</div></div>' });
+
+  // ---- weekly summary (all leaders) ----
+  function cell(v) { return v == null ? '<td class="nr">—</td>' : '<td>' + v + '</td>'; }
+  slides.push({ title:'Weekly summary', html:
+    '<div class="head"><div class="name">Weekly Summary</div><div class="choir">Team of Grace</div><div class="gov">' + (last ? 'WK ' + last.wk + ' · week ending ' + esc(last.label) : '') + '</div></div>' +
+    '<div class="kpis" style="top:20vh;grid-template-columns:repeat(5,1fr)">' + (last ? [
+      ['Prayer attendance', M.total(last.key,'prayer_att'), 'var(--blue)'], ['Outreach attendance', M.total(last.key,'outreach_att'), 'var(--green)'],
+      ['Souls won', M.total(last.key,'outreach_souls'), 'var(--pink)'], ['Rehearsal attendance', M.total(last.key,'rehearsal_att'), 'var(--purple)'], ['Sunday in church', M.total(last.key,'sunday_church'), 'var(--sun)'] ]
+      .map(function (k) { return '<div class="kpi" style="--kc:' + k[2] + '"><div class="lab">' + k[0] + '</div><div class="val">' + k[1] + '</div></div>'; }).join('') : '') + '</div>' +
+    '<div class="sumtbl"><table><thead><tr><th>Leader</th><th>Team</th><th>Prayer</th><th>Prayer offering</th><th>Outreach</th><th>Souls won</th><th>Rehearsal</th><th>Rehearsal offering</th><th>Sunday in church</th></tr></thead><tbody>' +
+      M.leaders.map(function (L) { var k = last ? last.key : null; function g(it) { return k == null ? null : M.get(L.leader, k, it); }
+        return '<tr><td>' + esc(L.leader) + '</td><td>' + M.team(L) + '</td>' + cell(g('prayer_att')) + cell(g('prayer_off')) + cell(g('outreach_att')) + cell(g('outreach_souls')) + cell(g('rehearsal_att')) + cell(g('rehearsal_off')) + cell(g('sunday_church')) + '</tr>'; }).join('') +
+      (last ? '<tr class="total"><td>Total</td><td>' + M.leaders.reduce(function (t, L) { return t + M.team(L); }, 0) + '</td><td>' + M.total(last.key,'prayer_att') + '</td><td>' + M.total(last.key,'prayer_off') + '</td><td>' + M.total(last.key,'outreach_att') + '</td><td>' + M.total(last.key,'outreach_souls') + '</td><td>' + M.total(last.key,'rehearsal_att') + '</td><td>' + M.total(last.key,'rehearsal_off') + '</td><td>' + M.total(last.key,'sunday_church') + '</td></tr>' : '') +
+    '</tbody></table></div>' });
+
+  // ---- one page per leader ----
+  M.leaders.forEach(function (L, i) {
+    var id = 'l' + i, k = last ? last.key : null; function g(it) { return k == null ? null : M.get(L.leader, k, it); }
+    var members = L.shepherds.map(function (s) { return '<div class="sh"><b>' + esc(s.name) + '</b>' + s.members.map(function (m) { return '<span>' + esc(m) + '</span>'; }).join('') + '</div>'; }).join('');
+    var pics = [['photo_prayer','Prayer'],['photo_outreach','Outreach'],['photo_rehearsal','Rehearsal']].filter(function (p) { return g(p[0]); })
+      .map(function (p) { return '<a href="' + esc(g(p[0])) + '" target="_blank" rel="noopener">' + p[1] + ' picture</a>'; }).join(' · ');
+    slides.push({ title: L.leader, html:
+      '<div class="leader">' +
+      '<div class="person">' + (L.photo ? '<img class="pic" src="' + esc(L.photo) + '">' : '<div class="pic">' + initials(L.leader) + '</div>') + '</div>' +
+      '<div class="head"><div class="name">' + esc(L.leader) + '</div><div class="choir">TEAM OF GRACE</div></div>' +
+      '<div class="tbadge"><span class="badge">Team: ' + M.team(L) + '</span></div>' +
+      '<div class="gcol">' +
+        '<div class="gbox"><div class="cap"><span class="pill">Prayer · Outreach · Rehearsal</span><span class="legend"><span><i class="sw" style="background:var(--blue)"></i> Prayer</span><span><i class="sw" style="background:var(--green)"></i> Outreach</span><span><i class="sw" style="background:var(--pink)"></i> Souls won</span><span><i class="sw" style="background:var(--purple)"></i> Rehearsal</span></span></div><div class="area"><canvas id="' + id + 'a"></canvas></div></div>' +
+        '<div class="gbox"><div class="cap"><span class="pill">Sunday Attendance</span><span class="legend"><span><i class="sw" style="background:var(--sun)"></i> Members in church</span></span></div><div class="area"><canvas id="' + id + 'b"></canvas></div></div>' +
+      '</div>' +
+      '<div class="rcol">' +
+        '<div class="teamlist"><h4>Team · ' + M.team(L) + (L.shepherds.length ? ' (' + L.shepherds.length + ' shepherds)' : '') + '</h4>' + (members ? '<div class="cols">' + members + '</div>' : '<span style="color:#777">No list received yet</span>') + '</div>' +
+        '<div class="wkbox"><h4>This week' + (last ? ' · WK ' + last.wk : '') + '</h4>' +
+          '<div><b>Prayer:</b> ' + fmt(g('prayer_att')) + ' present · ' + ghs(g('prayer_off')) + (g('prayer_names') ? '<br><b>Attendees:</b> ' + esc(g('prayer_names')) : '') + '</div>' +
+          '<div><b>Outreach:</b> ' + fmt(g('outreach_att')) + ' went out · ' + fmt(g('outreach_souls')) + ' souls · ' + ghs(g('outreach_off')) + '</div>' +
+          '<div><b>Rehearsal:</b> ' + fmt(g('rehearsal_att')) + ' present · ' + ghs(g('rehearsal_off')) + (g('rehearsal_venue') ? ' · <b>Venue:</b> ' + esc(g('rehearsal_venue')) : '') + '</div>' +
+          '<div><b>Sunday:</b> ' + fmt(g('sunday_church')) + ' in church</div>' + (pics ? '<div>' + pics + '</div>' : '') +
+        '</div>' +
+      '</div></div>',
+      draw:function () {
+        function col(it) { return W.map(function (w) { return M.get(L.leader, w.key, it); }); }
+        chart(document.getElementById(id + 'a'), labels, [ bars('Prayer', col('prayer_att'), '#1f5fff'), bars('Outreach', col('outreach_att'), '#35c27a'), bars('Souls won', col('outreach_souls'), '#e2574c'), bars('Rehearsal', col('rehearsal_att'), '#a78bfa') ]);
+        chart(document.getElementById(id + 'b'), labels, [ bars('Sunday', col('sunday_church'), '#f5c518') ]);
+      } });
+  });
+
+  deck.innerHTML = slides.map(function (s, i) { return '<section class="slide" id="sl' + i + '">' + s.html + '</section>'; }).join('');
+  var jump = document.getElementById('jump'); jump.innerHTML = slides.map(function (s, i) { return '<option value="' + i + '">' + (i + 1) + '. ' + esc(s.title) + '</option>'; }).join('');
+  var cur = -1, drawn = {};
+  function go(i) { i = Math.max(0, Math.min(slides.length - 1, i)); if (i === cur) return;
+    if (cur >= 0) document.getElementById('sl' + cur).classList.remove('on');
+    cur = i; document.getElementById('sl' + i).classList.add('on'); jump.value = i; document.getElementById('pos').textContent = (i + 1) + ' / ' + slides.length;
+    if (slides[i].draw && !drawn[i]) { drawn[i] = 1; slides[i].draw(); } location.hash = i + 1; }
+  document.getElementById('prev').onclick = function () { go(cur - 1); }; document.getElementById('next').onclick = function () { go(cur + 1); };
+  jump.onchange = function () { go(+jump.value); };
+  document.addEventListener('keydown', function (e) { if (e.key === 'ArrowRight' || e.key === ' ') go(cur + 1); if (e.key === 'ArrowLeft') go(cur - 1); });
+  window.addEventListener('hashchange', function () { go((parseInt(location.hash.slice(1), 10) || 1) - 1); });
+  go((parseInt(location.hash.slice(1), 10) || 1) - 1);
+}, function (e) { document.body.innerHTML = '<p style="padding:20px;color:#f88">' + e.message + '</p>'; });
+</script>
+</body>
+</html>
