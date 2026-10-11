@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Team of Grace — Weekly Reports</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="style.css?v=14">
-  <script src="config.js?v=14"></script><script src="roster.js?v=14"></script><script src="manual.js?v=14"></script><script src="data.js?v=14"></script>
+  <link rel="stylesheet" href="style.css?v=15">
+  <script src="config.js?v=15"></script><script src="roster.js?v=15"></script><script src="manual.js?v=15"></script><script src="data.js?v=15"></script>
 </head>
 <body>
   <div class="deck" id="deck"></div>
@@ -64,8 +64,13 @@ TG.load(function (M) {
     var hasLists = L.shepherds.some(function (s) { return s.members.length; }), nsh = L.shepherds.length;
     var members = L.shepherds.map(function (s) { var n = s.members.length;
       return '<div class="shrow"><b>' + esc(s.name) + ':</b> ' + (hasLists ? '<span class="v">' + n + '</span> chorister' + (n === 1 ? '' : 's') : '<span class="nr">— members</span>') + '</div>'; }).join('');
+    // pictures uploaded through the form live in Google Drive: show a thumbnail (works once the upload folder is
+    // shared "anyone with the link"); if Drive refuses, fall back to a plain link
+    function driveId(u) { var m = /id=([\w-]+)/.exec(String(u)) || /\/d\/([\w-]+)/.exec(String(u)); return m ? m[1] : null; }
     var pics = [['photo_prayer','Prayer'],['photo_outreach','Outreach'],['photo_rehearsal','Rehearsal']].filter(function (p) { return g(p[0]); })
-      .map(function (p) { return '<a href="' + esc(g(p[0])) + '" target="_blank" rel="noopener">' + p[1] + ' picture</a>'; }).join(' · ');
+      .map(function (p) { var u = g(p[0]), fid = driveId(u);
+        return '<a class="pic" href="' + esc(u) + '" target="_blank" rel="noopener">' + (fid ? '<img src="https://drive.google.com/thumbnail?id=' + fid + '&sz=w600" alt="" onerror="this.parentNode.classList.add(\'nopic\')">' : '') + '<span>' + p[1] + '</span></a>'; }).join('');
+    if (pics) pics = '<div class="pics">' + pics + '</div>';
     slides.push({ title: L.leader, html:
       '<div class="leader">' +
       '<div class="person">' + (L.photo ? '<img class="pic" src="' + esc(L.photo) + '">' : '<div class="pic">' + initials(L.leader) + '</div>') + '</div>' +
@@ -90,8 +95,7 @@ TG.load(function (M) {
           if (g('prayer_names')) det.push('<b>Prayer attendees:</b> ' + esc(g('prayer_names')));
           if (g('rehearsal_venue')) det.push('<b>Rehearsal venue:</b> ' + esc(g('rehearsal_venue')));
           if (g('sunday_premob') != null) det.push('<b>Pre-mobilisation prayer:</b> ' + g('sunday_premob') + ' members');
-          if (pics) det.push(pics);
-          return '<div class="wkbox"><h4>' + (last ? 'WK ' + last.wk + ' · ' : '') + 'not reported</h4>' +
+          return (pics || '') + '<div class="wkbox"><h4>' + (last ? 'WK ' + last.wk + ' · ' : '') + 'not reported</h4>' +
             (miss.length ? miss.map(function (m) { return '<div class="nr">✗ ' + m + '</div>'; }).join('') : '<div style="color:var(--green)">✓ Everything reported</div>') +
             (det.length ? '<h4 style="margin-top:.8vh">Details</h4>' + det.map(function (d) { return '<div>' + d + '</div>'; }).join('') : '') + '</div>';
         })() +
