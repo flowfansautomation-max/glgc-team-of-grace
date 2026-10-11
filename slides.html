@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Team of Grace — Weekly Reports</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="style.css?v=10">
-  <script src="config.js?v=10"></script><script src="roster.js?v=10"></script><script src="manual.js?v=10"></script><script src="data.js?v=10"></script>
+  <link rel="stylesheet" href="style.css?v=11">
+  <script src="config.js?v=11"></script><script src="roster.js?v=11"></script><script src="manual.js?v=11"></script><script src="data.js?v=11"></script>
 </head>
 <body>
   <div class="deck" id="deck"></div>
@@ -77,7 +77,7 @@ TG.load(function (M) {
         '<div class="gbox"><div class="cap"><span class="pill">Sunday Attendance</span><span class="legend">' + sw('var(--sun)') + 'Members in church</span></span></div><div class="area"><canvas id="' + id + 'c"></canvas></div></div>' +
       '</div>' +
       '<div class="rcol">' +
-        '<div class="teamlist"><h4>Shepherds · ' + nsh + ' of ' + N + '</h4>' + (members ? '<div class="cols">' + members + '</div>' : '<span class="nr">— no shepherds listed</span>') + '</div>' +
+        '<div class="teamlist"><h4>Shepherds · ' + nsh + ' of ' + N + (hasLists ? ' <span class="sep">·</span> Choristers · ' + L.shepherds.reduce(function (t, x) { return t + x.members.length; }, 0) : '') + '</h4>' + (members ? '<div class="cols">' + members + '</div>' : '<span class="nr">— no shepherds listed</span>') + '</div>' +
         (function () {
           var miss = [];
           if (g('prayer_att') == null) miss.push('Prayer: no report'); else if (g('prayer_off') == null) miss.push('Prayer offering: not reported');

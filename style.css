@@ -136,3 +136,5 @@ html, body { margin:0; background:#000; color:#fff; font-family:Arial, Helvetica
 .sumwrap .kpis { position:static; flex:0 0 auto; }
 .sumwrap .kpi { padding:1vh 1vw; } .sumwrap .kpi .lab { font-size:1.3vh; line-height:1.25; } .sumwrap .kpi .val { font-size:4vh; white-space:nowrap; }
 .sumwrap .sumtbl { position:static; flex:1 1 auto; overflow:auto; min-height:0; }
+
+.teamlist h4 .sep { color:#444; margin:0 .4vw; }
