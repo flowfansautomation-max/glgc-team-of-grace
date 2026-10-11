@@ -95,9 +95,11 @@ html, body { margin:0; background:#000; color:#fff; font-family:Arial, Helvetica
 .leader .head .name { font-size:6vh; }
 .leader .head .choir { font-size:5.2vh; }
 .tbadge { position:absolute; top:12vh; right:3vw; }
-.gcol { position:absolute; left:3vw; width:58vw; top:21vh; bottom:7vh; display:flex; flex-direction:column; gap:1.2vh; }
+.gcol { position:absolute; left:3vw; width:58vw; top:20vh; bottom:4vh; display:flex; flex-direction:column; gap:.6vh; }
 .gbox { flex:1; display:flex; flex-direction:column; min-height:0; }
-.gbox .cap { display:flex; align-items:center; gap:1.2vw; flex-wrap:wrap; margin-bottom:.4vh; }
+.gbox .cap { display:flex; align-items:center; gap:1vw; flex-wrap:wrap; margin-bottom:.2vh; }
+.gbox .pill { font-size:1.7vh; padding:.5vh 1.4vw; }
+.gbox .legend { font-size:1.5vh; }
 .gbox .area { flex:1; position:relative; min-height:0; }
 .rcol { position:absolute; right:3vw; width:34vw; top:19vh; bottom:7vh; display:flex; flex-direction:column; gap:1.2vh; }
 .teamlist { flex:1; overflow:auto; background:#0e0e0e; border:1px solid #262626; border-radius:12px; padding:1.2vh 1.2vw; }
