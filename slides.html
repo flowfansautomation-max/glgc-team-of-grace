@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Team of Grace — Weekly Reports</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="style.css?v=8">
-  <script src="config.js?v=8"></script><script src="roster.js?v=8"></script><script src="manual.js?v=8"></script><script src="data.js?v=8"></script>
+  <link rel="stylesheet" href="style.css?v=9">
+  <script src="config.js?v=9"></script><script src="roster.js?v=9"></script><script src="manual.js?v=9"></script><script src="data.js?v=9"></script>
 </head>
 <body>
   <div class="deck" id="deck"></div>
@@ -61,7 +61,9 @@ TG.load(function (M) {
   // ---- one page per leader: 3 graphs ----
   M.leaders.forEach(function (L, i) {
     var id = 'l' + i; function g(it) { return k == null ? null : M.get(L.leader, k, it); }
-    var members = L.shepherds.map(function (s) { return '<div class="sh"><b>' + esc(s.name) + '</b>' + s.members.map(function (m) { return '<span>' + esc(m) + '</span>'; }).join('') + '</div>'; }).join('');
+    var hasLists = L.shepherds.some(function (s) { return s.members.length; }), nsh = L.shepherds.length;
+    var members = L.shepherds.map(function (s) { var n = s.members.length;
+      return '<div class="shrow"><b>' + esc(s.name) + ':</b> ' + (hasLists ? '<span class="v">' + n + '</span> chorister' + (n === 1 ? '' : 's') : '<span class="nr">— members</span>') + '</div>'; }).join('');
     var pics = [['photo_prayer','Prayer'],['photo_outreach','Outreach'],['photo_rehearsal','Rehearsal']].filter(function (p) { return g(p[0]); })
       .map(function (p) { return '<a href="' + esc(g(p[0])) + '" target="_blank" rel="noopener">' + p[1] + ' picture</a>'; }).join(' · ');
     slides.push({ title: L.leader, html:
@@ -75,7 +77,7 @@ TG.load(function (M) {
         '<div class="gbox"><div class="cap"><span class="pill">Sunday Attendance</span><span class="legend">' + sw('var(--sun)') + 'Members in church (of ' + N + ')</span></span></div><div class="area"><canvas id="' + id + 'c"></canvas></div></div>' +
       '</div>' +
       '<div class="rcol">' +
-        '<div class="teamlist"><h4>Team list · ' + (M.team(L) <= N ? M.team(L) + ' of ' + N : M.team(L) + ' named') + (L.shepherds.length ? ' · ' + L.shepherds.length + ' shepherds' : '') + '</h4>' + (members ? '<div class="cols">' + members + '</div>' : '<span style="color:#777">No list received yet</span>') + '</div>' +
+        '<div class="teamlist"><h4>Shepherds · ' + nsh + ' of ' + N + '</h4>' + (members ? '<div class="cols">' + members + '</div>' : '<span class="nr">— no shepherds listed</span>') + '</div>' +
         (function () {
           var miss = [];
           if (g('prayer_att') == null) miss.push('Prayer: no report'); else if (g('prayer_off') == null) miss.push('Prayer offering: not reported');
@@ -83,6 +85,7 @@ TG.load(function (M) {
           else { if (g('outreach_att') == null) miss.push('Outreach: how many went out not reported'); if (g('outreach_souls') == null) miss.push('Outreach: souls won not reported'); if (g('outreach_off') == null) miss.push('Outreach offering: not reported'); }
           if (g('rehearsal_att') == null) miss.push('Rehearsal: no report'); else if (g('rehearsal_off') == null) miss.push('Rehearsal offering: not reported');
           if (g('sunday_church') == null) miss.push('Sunday: no report');
+          if (!nsh) miss.push('Shepherds: list not received'); else if (!hasLists) miss.push('Members under each shepherd: not reported');
           var det = [];
           if (g('prayer_names')) det.push('<b>Prayer attendees:</b> ' + esc(g('prayer_names')));
           if (g('rehearsal_venue')) det.push('<b>Rehearsal venue:</b> ' + esc(g('rehearsal_venue')));
