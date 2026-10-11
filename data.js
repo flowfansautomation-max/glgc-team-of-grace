@@ -1,7 +1,7 @@
 /* Data layer for Team of Grace. Rows keyed by week (Sunday) and leader; latest value wins. */
 window.TG = (function () {
   var CFG = window.TG_CONFIG, LEADERS = window.LEADERS;
-  var ITEMS = ['prayer_att','prayer_off','prayer_names','outreach_att','outreach_souls','outreach_off','rehearsal_venue','rehearsal_att','rehearsal_off','sunday_church','photo_prayer','photo_outreach','photo_rehearsal'];
+  var ITEMS = ['prayer_att','prayer_off','prayer_names','outreach_att','outreach_souls','outreach_off','rehearsal_venue','rehearsal_att','rehearsal_off','sunday_church','sunday_premob','photo_prayer','photo_outreach','photo_rehearsal'];
   var MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   function parseDate(v) {
     if (v == null || v === '') return null; if (v instanceof Date) return v;
@@ -34,6 +34,7 @@ window.TG = (function () {
           if (/^prayer/.test(h)) { block = 'prayer'; return; }
           if (/^outreach/.test(h)) { block = 'outreach'; return; }
           if (/^rehearsal/.test(h)) { block = 'rehearsal'; return; }
+          if (/mobili[sz]ation prayer/.test(h)) { map.sunday_premob = i; return; }
           if (/church|sunday/.test(h)) { map.sunday_church = i; return; }
           if (!block) return;
           if (/attendance/.test(h)) map[block + '_att'] = i;
@@ -60,7 +61,7 @@ window.TG = (function () {
     rows.forEach(function (r) { if (!r.week || !r.leader) return;
       var sun = sundayOnOrAfter(r.week), k = sun.getTime(); weeks[k] = sun;
       var d = data[r.leader] || (data[r.leader] = {}), w = d[k] || (d[k] = {});
-      w[r.item] = /_(att|off|souls|church)$/.test(r.item) ? num(r.value) : r.value; });
+      w[r.item] = /_(att|off|souls|church|premob)$/.test(r.item) ? num(r.value) : r.value; });
     var W = Object.keys(weeks).map(Number).sort(function (a, b) { return a - b; }).map(function (k) { return { key: k, date: weeks[k], wk: isoWeek(weeks[k]), label: label(weeks[k]) }; });
     function get(leader, k, item) { var d = data[leader] && data[leader][k]; return d && d[item] != null ? d[item] : null; }
     function reported(leader, k) { var d = data[leader] && data[leader][k]; return !!(d && Object.keys(d).length); }

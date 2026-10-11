@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Team of Grace — Weekly Reports</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="style.css?v=12">
-  <script src="config.js?v=12"></script><script src="roster.js?v=12"></script><script src="manual.js?v=12"></script><script src="data.js?v=12"></script>
+  <link rel="stylesheet" href="style.css?v=13">
+  <script src="config.js?v=13"></script><script src="roster.js?v=13"></script><script src="manual.js?v=13"></script><script src="data.js?v=13"></script>
 </head>
 <body>
   <div class="deck" id="deck"></div>
@@ -89,6 +89,7 @@ TG.load(function (M) {
           var det = [];
           if (g('prayer_names')) det.push('<b>Prayer attendees:</b> ' + esc(g('prayer_names')));
           if (g('rehearsal_venue')) det.push('<b>Rehearsal venue:</b> ' + esc(g('rehearsal_venue')));
+          if (g('sunday_premob') != null) det.push('<b>Pre-mobilisation prayer:</b> ' + g('sunday_premob') + ' members');
           if (pics) det.push(pics);
           return '<div class="wkbox"><h4>' + (last ? 'WK ' + last.wk + ' · ' : '') + 'not reported</h4>' +
             (miss.length ? miss.map(function (m) { return '<div class="nr">✗ ' + m + '</div>'; }).join('') : '<div style="color:var(--green)">✓ Everything reported</div>') +
