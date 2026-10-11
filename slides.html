@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Team of Grace — Weekly Reports</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="style.css?v=6">
-  <script src="config.js?v=6"></script><script src="roster.js?v=6"></script><script src="manual.js?v=6"></script><script src="data.js?v=6"></script>
+  <link rel="stylesheet" href="style.css?v=8">
+  <script src="config.js?v=8"></script><script src="roster.js?v=8"></script><script src="manual.js?v=8"></script><script src="data.js?v=8"></script>
 </head>
 <body>
   <div class="deck" id="deck"></div>
@@ -22,7 +22,7 @@ function chart(canvas, labels, datasets) {
   var scales = { x:{ ticks:{color:'#ddd',font:{size:12}}, grid:{display:false}, border:{color:'#fff'} },
                  y:{ display:false, beginAtZero:true, grace:'30%', suggestedMax:N }, y1:{ display:false, beginAtZero:true, grace:'30%', position:'right' } };
   return new Chart(canvas, { type:'bar', plugins:[valueLabels], data:{ labels:labels, datasets:datasets },
-    options:{ responsive:true, maintainAspectRatio:false, animation:false, plugins:{ legend:{display:false} }, scales:scales } }); }
+    options:{ responsive:true, maintainAspectRatio:false, animation:false, layout:{ padding:{ top:18 } }, plugins:{ legend:{display:false} }, scales:scales } }); }
 function att(label, data, color) { return { label:label, data:data, backgroundColor:color, borderRadius:4, maxBarThickness:44, of:N, yAxisID:'y' }; }
 function plain(label, data, color) { return { label:label, data:data, backgroundColor:color, borderRadius:4, maxBarThickness:44, yAxisID:'y' }; }
 function money(label, data) { return { label:label, data:data, backgroundColor:'#e2574c', borderRadius:4, maxBarThickness:44, money:true, yAxisID:'y1' }; }
@@ -45,17 +45,17 @@ TG.load(function (M) {
   function cellN(v) { return v == null ? '<td class="nr">—</td>' : '<td>' + v + ' <small style="color:#777">/ ' + N + '</small></td>'; }
   function cellG(v) { return v == null ? '<td class="nr">—</td>' : '<td>GHS ' + v + '</td>'; }
   var tiles = last ? [
-      ['Prayer attendance', M.total(k,'prayer_att') + '<small> / ' + ALL + '</small>', 'var(--blue)'], ['Outreach attendance', M.total(k,'outreach_att') + '<small> / ' + ALL + '</small>', 'var(--green)'],
-      ['Souls won', M.total(k,'outreach_souls'), 'var(--pink)'], ['Rehearsal attendance', M.total(k,'rehearsal_att') + '<small> / ' + ALL + '</small>', 'var(--purple)'],
+      ['Prayer attendance', M.total(k,'prayer_att') + '<small> / ' + ALL + '</small>', 'var(--blue)'], ['Shepherds who went out', M.total(k,'outreach_att') + '<small> / ' + ALL + '</small>', 'var(--green)'],
+      ['Souls won', M.total(k,'outreach_souls'), 'var(--pink)'], ['Rehearsal attendance', M.total(k,'rehearsal_att'), 'var(--purple)'],
       ['Sunday in church', M.total(k,'sunday_church') + '<small> / ' + ALL + '</small>', 'var(--sun)'],
-      ['Total offering', '<span style="font-size:4.2vh">GHS ' + (M.total(k,'prayer_off') + M.total(k,'outreach_off') + M.total(k,'rehearsal_off')) + '</span>', 'var(--red)'] ] : [];
+      ['Total offering', '<small style="font-size:2.2vh;color:inherit">GHS </small>' + (M.total(k,'prayer_off') + M.total(k,'outreach_off') + M.total(k,'rehearsal_off')), 'var(--red)'] ] : [];
   slides.push({ title:'Weekly summary', html:
     '<div class="head"><div class="name">Weekly Summary</div><div class="choir">Team of Grace</div><div class="gov">' + (last ? 'WK ' + last.wk + ' · week ending ' + esc(last.label) + ' · every team counted out of ' + N : '') + '</div></div>' +
-    '<div class="kpis" style="top:20vh;grid-template-columns:repeat(6,1fr)">' + tiles.map(function (t) { return '<div class="kpi" style="--kc:' + t[2] + '"><div class="lab">' + t[0] + '</div><div class="val">' + t[1] + '</div></div>'; }).join('') + '</div>' +
-    '<div class="sumtbl"><table><thead><tr><th>Leader</th><th>Prayer</th><th>Prayer offering</th><th>Outreach</th><th>Souls won</th><th>Outreach offering</th><th>Rehearsal</th><th>Rehearsal offering</th><th>Sunday in church</th></tr></thead><tbody>' +
+    '<div class="kpis compact" style="top:19vh;grid-template-columns:repeat(6,1fr)">' + tiles.map(function (t) { return '<div class="kpi" style="--kc:' + t[2] + '"><div class="lab">' + t[0] + '</div><div class="val">' + t[1] + '</div></div>'; }).join('') + '</div>' +
+    '<div class="sumtbl"><table><thead><tr><th>Leader</th><th>Prayer</th><th>Prayer offering</th><th>Went out</th><th>Souls won</th><th>Outreach offering</th><th>Rehearsal</th><th>Rehearsal offering</th><th>Sunday in church</th></tr></thead><tbody>' +
       M.leaders.map(function (L) { function g(it) { return k == null ? null : M.get(L.leader, k, it); }
-        return '<tr><td>' + esc(L.leader) + '</td>' + cellN(g('prayer_att')) + cellG(g('prayer_off')) + cellN(g('outreach_att')) + cell(g('outreach_souls')) + cellG(g('outreach_off')) + cellN(g('rehearsal_att')) + cellG(g('rehearsal_off')) + cellN(g('sunday_church')) + '</tr>'; }).join('') +
-      (last ? '<tr class="total"><td>Total</td><td>' + M.total(k,'prayer_att') + ' / ' + ALL + '</td><td>GHS ' + M.total(k,'prayer_off') + '</td><td>' + M.total(k,'outreach_att') + ' / ' + ALL + '</td><td>' + M.total(k,'outreach_souls') + '</td><td>GHS ' + M.total(k,'outreach_off') + '</td><td>' + M.total(k,'rehearsal_att') + ' / ' + ALL + '</td><td>GHS ' + M.total(k,'rehearsal_off') + '</td><td>' + M.total(k,'sunday_church') + ' / ' + ALL + '</td></tr>' : '') +
+        return '<tr><td>' + esc(L.leader) + '</td>' + cellN(g('prayer_att')) + cellG(g('prayer_off')) + cellN(g('outreach_att')) + cell(g('outreach_souls')) + cellG(g('outreach_off')) + cell(g('rehearsal_att')) + cellG(g('rehearsal_off')) + cellN(g('sunday_church')) + '</tr>'; }).join('') +
+      (last ? '<tr class="total"><td>Total</td><td>' + M.total(k,'prayer_att') + ' / ' + ALL + '</td><td>GHS ' + M.total(k,'prayer_off') + '</td><td>' + M.total(k,'outreach_att') + ' / ' + ALL + '</td><td>' + M.total(k,'outreach_souls') + '</td><td>GHS ' + M.total(k,'outreach_off') + '</td><td>' + M.total(k,'rehearsal_att') + '</td><td>GHS ' + M.total(k,'rehearsal_off') + '</td><td>' + M.total(k,'sunday_church') + ' / ' + ALL + '</td></tr>' : '') +
     '</tbody></table></div>' });
 
   // ---- one page per leader: 3 graphs ----
@@ -71,22 +71,31 @@ TG.load(function (M) {
       '<div class="tbadge"><span class="badge">Team of ' + N + '</span></div>' +
       '<div class="gcol">' +
         '<div class="gbox"><div class="cap"><span class="pill">Prayer</span><span class="legend">' + sw('var(--blue)') + 'Attendance (of ' + N + ')</span>' + sw('var(--pink)') + 'Offering (GHS)</span></span></div><div class="area"><canvas id="' + id + 'a"></canvas></div></div>' +
-        '<div class="gbox"><div class="cap"><span class="pill">Rehearsal · Outreach</span><span class="legend">' + sw('var(--purple)') + 'Rehearsal (of ' + N + ')</span>' + sw('var(--pink)') + 'Rehearsal offering (GHS)</span>' + sw('var(--green)') + 'Outreach (of ' + N + ')</span>' + sw('#ffb020') + 'Souls won</span></span></div><div class="area"><canvas id="' + id + 'b"></canvas></div></div>' +
+        '<div class="gbox"><div class="cap"><span class="pill">Rehearsal · Outreach</span><span class="legend">' + sw('var(--purple)') + 'Rehearsal attendance</span>' + sw('var(--pink)') + 'Rehearsal offering (GHS)</span>' + sw('var(--green)') + 'Shepherds who went out (of ' + N + ')</span>' + sw('#ffb020') + 'Souls won</span></span></div><div class="area"><canvas id="' + id + 'b"></canvas></div></div>' +
         '<div class="gbox"><div class="cap"><span class="pill">Sunday Attendance</span><span class="legend">' + sw('var(--sun)') + 'Members in church (of ' + N + ')</span></span></div><div class="area"><canvas id="' + id + 'c"></canvas></div></div>' +
       '</div>' +
       '<div class="rcol">' +
-        '<div class="teamlist"><h4>Team list · ' + M.team(L) + ' named' + (L.shepherds.length ? ' · ' + L.shepherds.length + ' shepherds' : '') + '</h4>' + (members ? '<div class="cols">' + members + '</div>' : '<span style="color:#777">No list received yet</span>') + '</div>' +
-        '<div class="wkbox"><h4>This week' + (last ? ' · WK ' + last.wk : '') + '</h4>' +
-          '<div><b>Prayer:</b> ' + of20(g('prayer_att')) + ' · ' + ghs(g('prayer_off')) + (g('prayer_names') ? '<br><b>Attendees:</b> ' + esc(g('prayer_names')) : '') + '</div>' +
-          '<div><b>Outreach:</b> ' + of20(g('outreach_att')) + ' went out · ' + fmt(g('outreach_souls')) + ' souls · ' + ghs(g('outreach_off')) + '</div>' +
-          '<div><b>Rehearsal:</b> ' + of20(g('rehearsal_att')) + ' · ' + ghs(g('rehearsal_off')) + (g('rehearsal_venue') ? ' · <b>Venue:</b> ' + esc(g('rehearsal_venue')) : '') + '</div>' +
-          '<div><b>Sunday:</b> ' + of20(g('sunday_church')) + ' in church</div>' + (pics ? '<div>' + pics + '</div>' : '') +
-        '</div>' +
+        '<div class="teamlist"><h4>Team list · ' + (M.team(L) <= N ? M.team(L) + ' of ' + N : M.team(L) + ' named') + (L.shepherds.length ? ' · ' + L.shepherds.length + ' shepherds' : '') + '</h4>' + (members ? '<div class="cols">' + members + '</div>' : '<span style="color:#777">No list received yet</span>') + '</div>' +
+        (function () {
+          var miss = [];
+          if (g('prayer_att') == null) miss.push('Prayer: no report'); else if (g('prayer_off') == null) miss.push('Prayer offering: not reported');
+          if (g('outreach_att') == null && g('outreach_souls') == null) miss.push('Outreach: no report');
+          else { if (g('outreach_att') == null) miss.push('Outreach: how many went out not reported'); if (g('outreach_souls') == null) miss.push('Outreach: souls won not reported'); if (g('outreach_off') == null) miss.push('Outreach offering: not reported'); }
+          if (g('rehearsal_att') == null) miss.push('Rehearsal: no report'); else if (g('rehearsal_off') == null) miss.push('Rehearsal offering: not reported');
+          if (g('sunday_church') == null) miss.push('Sunday: no report');
+          var det = [];
+          if (g('prayer_names')) det.push('<b>Prayer attendees:</b> ' + esc(g('prayer_names')));
+          if (g('rehearsal_venue')) det.push('<b>Rehearsal venue:</b> ' + esc(g('rehearsal_venue')));
+          if (pics) det.push(pics);
+          return '<div class="wkbox"><h4>' + (last ? 'WK ' + last.wk + ' · ' : '') + 'not reported</h4>' +
+            (miss.length ? miss.map(function (m) { return '<div class="nr">✗ ' + m + '</div>'; }).join('') : '<div style="color:var(--green)">✓ Everything reported</div>') +
+            (det.length ? '<h4 style="margin-top:.8vh">Details</h4>' + det.map(function (d) { return '<div>' + d + '</div>'; }).join('') : '') + '</div>';
+        })() +
       '</div></div>',
       draw:function () {
         function col(it) { return W.map(function (w) { return M.get(L.leader, w.key, it); }); }
         chart(document.getElementById(id + 'a'), labels, [ att('Prayer', col('prayer_att'), '#1f5fff'), money('Prayer offering', col('prayer_off')) ]);
-        chart(document.getElementById(id + 'b'), labels, [ att('Rehearsal', col('rehearsal_att'), '#a78bfa'), money('Rehearsal offering', col('rehearsal_off')), att('Outreach', col('outreach_att'), '#35c27a'), plain('Souls won', col('outreach_souls'), '#ffb020') ]);
+        chart(document.getElementById(id + 'b'), labels, [ plain('Rehearsal', col('rehearsal_att'), '#a78bfa'), money('Rehearsal offering', col('rehearsal_off')), att('Went out', col('outreach_att'), '#35c27a'), plain('Souls won', col('outreach_souls'), '#ffb020') ]);
         chart(document.getElementById(id + 'c'), labels, [ att('Sunday', col('sunday_church'), '#f5c518') ]);
       } });
   });

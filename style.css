@@ -121,3 +121,9 @@ html, body { margin:0; background:#000; color:#fff; font-family:Arial, Helvetica
 .sumtbl td { padding:.5vh 1.3vw; border-bottom:1px solid #222; text-align:center; } .sumtbl td:first-child { text-align:left; font-weight:bold; }
 .sumtbl tr.total td { border-top:2px solid var(--gold); color:var(--gold); font-weight:bold; }
 .sumtbl td.nr { color:#f2938b; font-size:1.5vh; }
+
+.kpis.compact .kpi { padding:1.1vh 1.1vw; }
+.kpis.compact .kpi .lab { font-size:1.35vh; }
+.kpis.compact .kpi .val { font-size:4.4vh; margin:.3vh 0; }
+.kpis.compact .kpi .val small { font-size:2vh; }
+.sumtbl { top:44vh; }
