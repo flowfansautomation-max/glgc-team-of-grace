@@ -13,27 +13,46 @@ window.TG = (function () {
   function label(d) { return d.getDate() + ' ' + MON[d.getMonth()]; }
   function isoWeek(d) { var t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())), day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); return Math.ceil(((t - new Date(Date.UTC(t.getUTCFullYear(), 0, 1))) / 86400000 + 1) / 7); }
   function num(v) { if (v == null || v === '') return null; var n = parseFloat(String(v).replace(/[^0-9.\-]/g, '')); return isNaN(n) ? null : n; }
-  function alias(name) { var s = String(name || '').toLowerCase().replace(/^lp\.?\s*/, '').replace(/[^a-z]/g, '');
-    for (var i = 0; i < LEADERS.length; i++) { var L = LEADERS[i];
-      if (L.leader.toLowerCase().replace(/^lp\s*/, '').replace(/[^a-z]/g, '') === s || L.full.toLowerCase().replace(/[^a-z]/g, '').indexOf(s) === 0) return L.leader; }
+  function alias(name) { var s = String(name || '').toLowerCase().replace(/^lp\.?\s*/, '').replace(/[^a-z]/g, ''); if (!s) return null;
+    for (var i = 0; i < LEADERS.length; i++) { var L = LEADERS[i], key = L.leader.toLowerCase().replace(/^lp\s*/, '').replace(/[^a-z]/g, ''), full = L.full.toLowerCase().replace(/[^a-z]/g, '');
+      if (key === s || full === s || full.indexOf(s) === 0 || s.indexOf(key) === 0) return L.leader; }
     return null; }
 
   function manualRows() { var rows = [];
     (window.MANUAL_REPORTS || []).forEach(function (r) { ITEMS.forEach(function (it) { if (r[it] !== undefined && r[it] !== null) rows.push({ week: parseDate(r.week), leader: r.leader, item: it, value: r[it] }); }); });
     return rows; }
+  // Reads LP Sarah's form response sheet (wide layout) and turns each submission into item rows.
   function fetchSheet() {
     return new Promise(function (resolve, reject) {
       var cb = '__tgcb' + Date.now();
       window[cb] = function (resp) { delete window[cb];
-        if (!resp || resp.status === 'error') return reject(new Error('Could not read the sheet'));
-        var Lb = resp.table.cols.map(function (c) { return String(c.label || '').toLowerCase(); });
-        function ix(w) { for (var i = 0; i < Lb.length; i++) if (Lb[i].indexOf(w) !== -1) return i; return -1; }
-        var iW = ix('week'), iL = ix('leader'), iI = ix('item'), iV = ix('value');
-        resolve(resp.table.rows.map(function (r) { var c = r.c || []; function v(i) { return i >= 0 && c[i] ? c[i].v : null; }
-          return { week: parseDate(v(iW)), leader: alias(v(iL)), item: String(v(iI) || '').trim(), value: v(iV) }; }).filter(function (r) { return r.week && r.leader; })); };
+        if (!resp || resp.status === 'error') return reject(new Error('Could not read the response sheet'));
+        var L = resp.table.cols.map(function (c) { return String(c.label || '').toLowerCase().trim(); });
+        var iTs = L.indexOf('timestamp'), iLead = -1, block = null, map = {};
+        L.forEach(function (h, i) {
+          if (/leader/.test(h)) { iLead = i; return; }
+          if (/^prayer/.test(h)) { block = 'prayer'; return; }
+          if (/^outreach/.test(h)) { block = 'outreach'; return; }
+          if (/^rehearsal/.test(h)) { block = 'rehearsal'; return; }
+          if (/church|sunday/.test(h)) { map.sunday_church = i; return; }
+          if (!block) return;
+          if (/attendance/.test(h)) map[block + '_att'] = i;
+          else if (/soul/.test(h)) map.outreach_souls = i;
+          else if (/offering/.test(h)) map[block + '_off'] = i;
+          else if (/picture|photo/.test(h)) map['photo_' + block] = i;
+          else if (/name/.test(h)) map.prayer_names = i;
+          else if (/venue/.test(h)) map.rehearsal_venue = i;
+        });
+        var rows = [];
+        resp.table.rows.forEach(function (r) { var c = r.c || []; function v(i) { return i >= 0 && c[i] ? c[i].v : null; }
+          var ts = parseDate(v(iTs)), leader = alias(v(iLead)); if (!ts || !leader) return;
+          Object.keys(map).forEach(function (item) { var val = v(map[item]); if (val == null || String(val).trim() === '') return;
+            if (/^photo_/.test(item)) val = String(val).split(',')[0].trim();
+            rows.push({ week: ts, leader: leader, item: item, value: val }); }); });
+        resolve(rows); };
       var s = document.createElement('script');
-      s.src = 'https://docs.google.com/spreadsheets/d/' + CFG.SHEET_ID + '/gviz/tq?sheet=' + encodeURIComponent(CFG.TAB) + '&headers=1&tqx=out:json;responseHandler:' + cb;
-      s.onerror = function () { reject(new Error('Could not reach the sheet')); }; document.body.appendChild(s);
+      s.src = 'https://docs.google.com/spreadsheets/d/' + CFG.SHEET_ID + '/gviz/tq?' + (CFG.TAB ? 'sheet=' + encodeURIComponent(CFG.TAB) + '&' : '') + 'headers=1&tqx=out:json;responseHandler:' + cb;
+      s.onerror = function () { reject(new Error('Could not reach the response sheet')); }; document.body.appendChild(s);
     });
   }
   function build(rows) {
@@ -52,7 +71,7 @@ window.TG = (function () {
   function load(cb, onErr) {
     var man = manualRows();
     if (!CFG.SHEET_ID) return cb(build(man));
-    fetchSheet().then(function (rows) { cb(build(man.concat(rows))); }).catch(onErr || function () {});
+    fetchSheet().then(function (rows) { var all = man.concat(rows).sort(function (a, b) { return (a.week || 0) - (b.week || 0); }); cb(build(all)); }).catch(onErr || function () {});
   }
   return { load: load };
 })();

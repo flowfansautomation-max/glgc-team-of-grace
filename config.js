@@ -1,6 +1,8 @@
 /* ---- Team of Grace config ----
-   SHEET_ID empty = the numbers in manual.js only. When the form's response sheet is connected, the loader
-   expects a tab "Reports": Week (Sunday date) | Leader | Item | Value
-   Items: prayer_att, prayer_off, prayer_names, outreach_att, outreach_souls, outreach_off,
-          rehearsal_venue, rehearsal_att, rehearsal_off, sunday_church, photo_prayer, photo_outreach, photo_rehearsal */
-window.TG_CONFIG = { SHEET_ID: '', TAB: 'Reports', TEAM_SIZE: 20 };   // every team is counted out of 20
+   SHEET_ID = LP Sarah's Google Form response sheet (shared "anyone with the link"). The loader reads the
+   form layout directly: Timestamp | LEADERS | Prayer Day | Attendance | Names | Offering | Picture |
+   Outreach days | Attendance | Number of souls | Offering | Pictures | Rehearsal Day | Venue | Attendance | Offering | Pictures
+   (+ any later column whose header contains "church" is read as Sunday in church).
+   Each submission counts for the week ending the Sunday on/after its timestamp; a later submission by the same leader
+   in the same week overrides the earlier one. manual.js adds anything typed by hand (e.g. leaders who did not use the form). */
+window.TG_CONFIG = { SHEET_ID: '1zJSblm8FytvztPCumxG3w2_g96fRB8a9e8M0mdMRyOQ', TAB: '', TEAM_SIZE: 20 };
